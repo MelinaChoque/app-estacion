@@ -3,35 +3,69 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Morphyx - Panel</title>
+	<title>AppClima - Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 	<link rel="stylesheet" type="text/css" href="../views/static/css/styles.css">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	
 </head>
 <body>
 
 		<header class="header-detalle">
-			<h1>Estacion {{CHIPID}}</h1>
+			<a class="first" href="../panel"><i class="fa-solid fa-arrow-left"><h5>App clima</h5></i></a>
+			
 		</header>
 		<main class="main-detalle">
 			<div id="content">
-			 	<template id="tpl__card">
-			 		<div class="stream__row__card letra-blanca">
-			 			<div class="stream__row__container">
-								<div class="apodo">
-				 					apodo
-				 				</div>
-				 				<i class="fa-solid fa-person icon-absolute-person"></i>
-				 				<div class="ubicacion">
-				 					ubicacion
-				 				</div>
-				 			<div class="chipid"></div>
-			 				</div>
-			 				
-			 		</div>
-			 	</template>
-			 	<div id="stream__listado">
-			 		</div>
+				<div class="part_izq">
+					<div class="title_part_izq title">Detalles de la estación:
+						<div class="estacion sub_title p-20 p-10"></div >
+						<div class="ubicacion sub_title p-20 p-10"></div>
+					</div>
+					
+					<div class="contenedor_todo">
+						<div class="categoria "></div>
+						
+						<div class="col-100">	
+							<div class="fila">	
+								<div class="var_1"></div>	
+								<div class="var_2 "></div>				
+								<div class="var_3 "></div>
+							</div>
+						<div>
+							
+						</div>
+							<div class="col-100 ">
+								<div class="fila">
+									<div class="var_4 absolute "></div>	
+									<div class="var_5 "></div>
+									<div class="var_6 "></div>
+									<div class="var_7 "></div>
+									<div class="var_8 "></div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+					
+					
+				</div>
+				<div class="part_der">
+					<div class="contenedor_header">
+						<div class="contenedor_btns">
+							<button class="btn" id="Temperatura" onclick="estado(id)"><i class="fa-solid fa-temperature-high p-der temp"></i>Temperatura</button>
+							<button class="btn" id="Humedad" onclick="estado(id)"><i class="fa-solid fa-droplet p-der hume"></i>Humedad</button> 
+							<button class="btn" id="Fuego" onclick="estado(id)"><i class="fa-solid fa-fire p-der fire"></i>Fuego</button> 
+							<button class="btn" id="Presion" onclick="estado(id)"><i class="fa-solid fa-arrow-down p-der pres"></i>Presion</button> 
+							<button class="btn" id="Viento" onclick="estado(id)" ><i class="fa-solid fa-wind p-der wind"></i>Viento</button>
+						</div>
+					</div>
+
+					<div class="grafico">
+						<canvas id="graph_canva"> </canvas>
+					</div>
+				</div>
+					
 			 </div>
 		</main>
 		<footer class="footer-landing letra-blanca">
@@ -39,33 +73,283 @@
 		</footer>
 
 	<script type="text/javascript">
+
+		const tiempo_carga = 60000;
+		let grafico = null;
+		let cant_datos = 7;
+		let mostrar_vista = "Temperatura";
 		
-		loadEstacion().then( data => {
-	 		data.forEach( row  => {
-	 			if({{CHIPID}}==row.chipid)
-	 				addEstacion(row);	
-	 		});
-	 	})
 
-	 	function addEstacion(data){
-	 		
-	 		const tpl = tpl__card.content;
-	 		/*< clona la plantilla como un nodo completo*/
-	 		const clon = tpl.cloneNode(true);
-
-	 		/*< alteramos el contenido del clon con los valores de data */
-	 		clon.querySelector(".apodo").textContent = data.apodo;
-	 		clon.querySelector(".ubicacion").textContent = data.ubicacion;
-
-			stream__listado.appendChild(clon);
-	 	}
-
-		async function loadEstacion(){
-		 	const response = await fetch("https://mattprofe.com.ar/proyectos/app-estacion/datos.php?mode=list-stations");
+		async function cargarDatos(){
+			const response = await fetch('https://mattprofe.com.ar/proyectos/app-estacion/datos.php?chipid={{CHIPID}}&cant=7');
 		 		const data = await response.json();
+		 		document.querySelector('.estacion').innerHTML = " <i class='fa-solid fa-tower-cell p-der verde'></i>Estacion: " + data[0].estacion;
+		 		document.querySelector('.ubicacion').innerHTML = "<i class='fa-solid fa-location-dot p-der red'></i> Ubicacion: " +  data[0].ubicacion;
 		 		return data;
-		 		console.log(response)
-		 	}
+		}
+
+		function recargar(){
+			cargarDatos().then(data =>{
+				datos_clima(data);
+				valoles_grafico(data);
+
+
+			})
+
+		}
+
+		recargar();
+		setInterval(recargar, tiempo_carga);
+
+
+
+		function estado(id){
+			document.querySelector(`#${mostrar_vista}`).classList.add("display_none")
+			mostrar_vista = id;
+
+			document.querySelector(`#${mostrar_vista}`).classList.remove("display_none")
+
+			cargarDatos().then(data => {
+				valoles_grafico(data);
+				datos_clima(data);
+			})
+		}
+
+		function fireDanger(fwi){
+			let fwiFloat = parseFloat(fwi)
+			
+			if(fwiFloat>=50){
+				return "Extremo"
+			}else{
+				if(fwiFloat>=38){
+					return "Muy alto"
+				}else{
+					if(fwiFloat>=21.3){
+						return "Alto"
+					}else{
+						if(fwiFloat>=11.2){
+							return "Moderado"
+						}else{
+							if(fwiFloat>=5.2){
+								return "Bajo"
+							}else{
+								return "Muy bajo"
+							}
+						}
+					}
+				}
+				}
+			}
+
+		function datos_clima(data){
+			switch(mostrar_vista){
+				case "Temperatura":
+					document.querySelector('.categoria').innerHTML ="Temperatura actual"
+					document.querySelector('.var_1').innerHTML = "" + data[0].temperatura + " °C"
+					document.querySelector('.var_2').innerHTML = "<i class='fa-solid fa-arrow-up icon-absolute red'></i>" + data[0].tempmax + " °C"
+    				document.querySelector('.var_3').innerHTML = "<i class='fa-solid fa-arrow-down icon-absolute verde'></i> " + data[0].tempmin + " °C";
+    				document.querySelector('.var_4').innerHTML = "Sensacion termica"
+    				document.querySelector('.var_5').innerHTML = ""+data[0].sensacion+"°C"
+    				document.querySelector('.var_6').innerHTML = ""
+					document.querySelector('.var_7').innerHTML = "<i class='fa-solid fa-arrow-up icon-absolute red'></i> " + data[0].sensamax + " °C"
+            		document.querySelector('.var_8').innerHTML = "<i class='fa-solid fa-arrow-down icon-absolute verde'></i> " + data[0].sensamin + " °C"
+    				document.querySelector('.var_4').classList.add('absolute');
+
+				break;
+				case "Humedad":
+					document.querySelector('.categoria').innerHTML ="Humedad"
+					document.querySelector('.var_1').innerHTML = "Humedad actual: "
+					document.querySelector('.var_2').innerHTML = data[0].humedad 
+					document.querySelector('.var_3').innerHTML = "" 
+					document.querySelector('.var_4').innerHTML = ""
+					document.querySelector('.var_5').innerHTML = "Humedad maxima: "
+					document.querySelector('.var_6').innerHTML = data[0].maxhumedad 
+					document.querySelector('.var_7').innerHTML = ""
+					document.querySelector('.var_8').innerHTML = ""
+
+
+				break;
+				case "Fuego":
+				let fwi = data[0].fwi;
+					document.querySelector('.categoria').innerHTML ="Fuego " + fireDanger(fwi)
+					document.querySelector('.var_1').innerHTML = "FWI " +  data[0].fwi
+					document.querySelector('.var_2').innerHTML = "FFMC: "+ data[0].ffmc
+					document.querySelector('.var_3').innerHTML = "DMC: " + data[0].dmc
+    				document.querySelector('.var_4').innerHTML = "DS:" + data[0].dc
+    				document.querySelector('.var_5').innerHTML = ""
+    				document.querySelector('.var_6').innerHTML = "ISI:" + data[0].isi  
+    				document.querySelector('.var_7').innerHTML = ""
+    				document.querySelector('.var_8').innerHTML = "BUI:" + data[0].bui
+    				document.querySelector('.var_4').classList.remove('absolute');
+				break;
+				case "Presion":
+					document.querySelector('.categoria').innerHTML ="Presion"
+					document.querySelector('.var_1').innerHTML = "HPA:"
+					document.querySelector('.var_2').innerHTML = " "
+					document.querySelector('.var_3').innerHTML =  data[0].presion
+					document.querySelector('.var_4').innerHTML = ""
+					document.querySelector('.var_5').innerHTML = ""
+					document.querySelector('.var_6').innerHTML = ""
+					document.querySelector('.var_7').innerHTML = ""
+					document.querySelector('.var_8').innerHTML = ""
+				break;
+				case "Viento":
+					document.querySelector('.categoria').innerHTML ="Viento"
+					document.querySelector('.var_1').innerHTML = "Viento actual: " 
+					document.querySelector('.var_2').innerHTML = data[0].viento + " Km/H" 
+					document.querySelector('.var_3').innerHTML = ""
+					document.querySelector('.var_4').innerHTML = "Viento max. : "
+					document.querySelector('.var_5').innerHTML = data[0].maxviento + " Km/H"
+					document.querySelector('.var_6').innerHTML = ""
+					document.querySelector('.var_7').innerHTML = ""
+					document.querySelector('.var_8').innerHTML = ""
+					document.querySelector('.var_4').classList.remove('absolute');
+				break;
+
+			}
+
+		}
+
+
+		function valoles_grafico(data){
+			let temp = []
+			let hume = []
+			let pres = []
+			let wind = []
+			let fire = []
+			let date = []
+
+			data.shift();
+
+			for (let i = data.length-1; i >= 0; i--) {
+
+			hora = data[i].fecha.split(" ")[1]
+
+
+				date.push(hora.split(":")[0]+":"+hora.split(":")[1]);
+				temp.push(data[i].temperatura);
+				hume.push(data[i].humedad);
+				wind.push(data[i].viento);
+				fire.push(data[i].fwi);
+				pres.push(data[i].presion);
+			}
+
+			if(date[date.length-1] == date[date.length-2]){
+				date.splice(date.length-1,1);
+				hume.splice(date.length-1,1);
+				temp.splice(date.length-1,1);
+				wind.splice(date.length-1,1);
+				fire.splice(date.length-1,1);
+				pres.splice(date.length-1,1);
+			}else{ 
+				date.splice(0,1);
+				hume.splice(0,1);
+				temp.splice(0,1);
+				wind.splice(0,1);
+				fire.splice(0,1);
+				pres.splice(0,1);
+			}
+
+				let vista_actual = [];
+				let bgColor=""
+				switch (mostrar_vista){
+				case 'Temperatura':
+					vista_actual = temp;
+					bgColor = 'rgba(255, 159, 64, 0.5)'
+				break;
+				case 'Humedad':
+					vista_actual = hume;
+					bgColor = ' rgba(20, 20, 245, 0.8)'
+				break;
+				case 'Presion':
+					vista_actual = pres;
+					bgColor = 'rgba(80, 200, 200, 0.8)'
+				break;
+				case 'Fuego':
+					vista_actual = fire;
+					bgColor = 'rgba(255, 99, 132, 0.5)'
+				break;
+				case 'Viento':
+					vista_actual = wind;
+					bgColor = 'rgba(135, 206, 250, 0.8)'
+				break;
+
+			}
+			const values = {
+				labels: date,
+				datasets: [{
+					label: (mostrar_vista != "Fuego") ? mostrar_vista: "FWI",
+					backgroundColor: bgColor,
+					borderColor: bgColor,
+					data: vista_actual,
+					tension: 0.4,
+					pointStyle: 'circle',
+					pointRadius: 6,
+					pointHoverRadius: 10
+				}]
+			}
+
+			cargarGrafico(values);
+		}
+
+// :root {
+//     --primero: #293242;
+//     --segundo: #8d97c9;
+//     --tercero: white;
+//     --cuarto: #acd7ec;
+//     --quinto: black;
+//     --sexto: #d6edff;
+// }
+		function cargarGrafico(values){
+			if (grafico) {
+				grafico.destroy(); 
+			}
+
+			const options = {
+				indexAxis: 'x',
+				responsive: true,
+				scales: {
+					x: {
+						ticks: {
+							color: 'white'
+						},
+						grid: {
+							display: true, 
+							color: '#8d97c9' 
+						}
+					},
+					y: {
+						beginAtZero: true, 
+						ticks: {
+							color: 'white'
+						},
+						grid: {
+							display: true, 
+							color: '#8d97c9' 
+						}
+					}
+				},
+				plugins: {
+					legend: {
+						display: false 
+					}
+				},
+				animation: {
+					duration: 0
+				}
+			};
+
+			const config = {
+				type: 'line',
+				data: values,
+				options: options
+			}
+			grafico = new Chart(document.querySelector("#graph_canva").getContext('2d'),config)
+
+		}
+
+
+
 
 
 	</script>
