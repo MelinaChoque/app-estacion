@@ -3,23 +3,21 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
 	<title>AppClima - Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 	<link rel="stylesheet" type="text/css" href="../views/static/css/styles.css">
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-=======
-	<title>Morphyx - Panel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-	<link rel="stylesheet" type="text/css" href="../views/static/css/styles.css">
->>>>>>> 3a8e0ffb854950df43dfe781076927463982af17
+
+
 	
 </head>
 <body>
 
 		<header class="header-detalle">
-<<<<<<< HEAD
-			<a class="first" href="../panel"><i class="fa-solid fa-arrow-left"><h5>App clima</h5></i></a>
+
+			<a class="first" href="../panel">
+				<i class="fa-solid fa-arrow-left letra-blanca"><h5>App clima</h5></i>
+			</a>
 			
 		</header>
 		<main class="main-detalle">
@@ -73,37 +71,16 @@
 					</div>
 				</div>
 					
-=======
-			<h1>Estacion {{CHIPID}}</h1>
-		</header>
-		<main class="main-detalle">
-			<div id="content">
-			 	<template id="tpl__card">
-			 		<div class="stream__row__card letra-blanca">
-			 			<div class="stream__row__container">
-								<div class="apodo">
-				 					apodo
-				 				</div>
-				 				<i class="fa-solid fa-person icon-absolute-person"></i>
-				 				<div class="ubicacion">
-				 					ubicacion
-				 				</div>
-				 			<div class="chipid"></div>
-			 				</div>
-			 				
-			 		</div>
-			 	</template>
-			 	<div id="stream__listado">
-			 		</div>
->>>>>>> 3a8e0ffb854950df43dfe781076927463982af17
-			 </div>
+			</div>
 		</main>
 		<footer class="footer-landing letra-blanca">
 			<p class="p-15">Autor Choque Melina.</p>
 		</footer>
+</body>
+</html>
 
 	<script type="text/javascript">
-<<<<<<< HEAD
+
 
 		const tiempo_carga = 60000;
 		let grafico = null;
@@ -323,14 +300,6 @@
 			cargarGrafico(values);
 		}
 
-// :root {
-//     --primero: #293242;
-//     --segundo: #8d97c9;
-//     --tercero: white;
-//     --cuarto: #acd7ec;
-//     --quinto: black;
-//     --sexto: #d6edff;
-// }
 		function cargarGrafico(values){
 			if (grafico) {
 				grafico.destroy(); 
@@ -378,39 +347,6 @@
 			grafico = new Chart(document.querySelector("#graph_canva").getContext('2d'),config)
 
 		}
-
-
-
-=======
-		
-		loadEstacion().then( data => {
-	 		data.forEach( row  => {
-	 			if({{CHIPID}}==row.chipid)
-	 				addEstacion(row);	
-	 		});
-	 	})
-
-	 	function addEstacion(data){
-	 		
-	 		const tpl = tpl__card.content;
-	 		/*< clona la plantilla como un nodo completo*/
-	 		const clon = tpl.cloneNode(true);
-
-	 		/*< alteramos el contenido del clon con los valores de data */
-	 		clon.querySelector(".apodo").textContent = data.apodo;
-	 		clon.querySelector(".ubicacion").textContent = data.ubicacion;
-
-			stream__listado.appendChild(clon);
-	 	}
-
-		async function loadEstacion(){
-		 	const response = await fetch("https://mattprofe.com.ar/proyectos/app-estacion/datos.php?mode=list-stations");
-		 		const data = await response.json();
-		 		return data;
-		 		console.log(response)
-		 	}
->>>>>>> 3a8e0ffb854950df43dfe781076927463982af17
-
 
 	</script>
 
